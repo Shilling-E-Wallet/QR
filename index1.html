@@ -194,8 +194,8 @@
       if (!canvas) return;
 
       const ctx = canvas.getContext('2d');
-      const logoSize = size * 0.3; // حجم الشعار بالنسبة للـ QR Code
-      const clearSpace = size * 0.4; // حجم المساحة البيضاء حول الشعار
+      const logoSize = size * 0.2; // حجم الشعار بالنسبة للـ QR Code
+      const clearSpace = size * 0.3; // حجم المساحة البيضاء حول الشعار
       const x = (canvas.width - clearSpace) / 2;
       const y = (canvas.height - clearSpace) / 2;
 
@@ -252,17 +252,6 @@ const totalTextWidth = baseTextWidth + extraWidth;
 const textX = (pageWidth - totalTextWidth) / 2;
 doc.text(labelText, textX, margin + size + 40 + textMargin);
 doc.setCharSpace(0);
-
-      // إضافة الشعار الموحد (إن وجد)
-      if (defaultLogo.src) {
-        const logoPositionX = margin + size * 0.35;
-        const logoPositionY = margin + size * 0.35;
-        const logoSizePdf = size * 0.3;
-
-        const logoImg = new Image();
-        logoImg.src = defaultLogo.src;
-        await doc.addImage(logoImg, 'PNG', logoPositionX, logoPositionY, logoSizePdf, logoSizePdf, undefined, 'FAST');
-      }
 
       // حفظ ملف الـ PDF
       doc.save('qr-code.pdf');
