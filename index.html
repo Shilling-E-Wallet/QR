@@ -184,10 +184,10 @@
     let currentQR;
 
     const defaultLogo = new Image();
-    defaultLogo.src = 'Asset 7@300x.png';
+    defaultLogo.src = '/Logo.png';
 
     const templateImage = new Image();
-    templateImage.src = 'POS.png';
+    templateImage.src = '/POS.png';
 
     function generateQR() {
       const textInput = document.getElementById('qrText').value.trim();
@@ -228,7 +228,7 @@
       if (!canvas) return;
 
       const ctx = canvas.getContext('2d');
-      const logoSize = size * 0.2;
+      const logoSize = size * 0.250;
       const clearSpace = size * 0.3;
       const x = (canvas.width - clearSpace) / 2;
       const y = (canvas.height - clearSpace) / 2;
@@ -279,6 +279,7 @@
         }
 
         doc.addImage(templateImage, 'PNG', 0, 0, pageWidth, pageHeight);
+        
 
         const qrCanvas = qrCodeElement.querySelector('canvas');
         if (!qrCanvas) {
@@ -286,11 +287,11 @@
         }
 
         const qrData = qrCanvas.toDataURL('image/png', 1.0);
-        doc.addImage(qrData, 'PNG', 98, 198, 205, 200);
+        doc.addImage(qrData, 'PNG', 98, 198, 202, 200);
 
         const labelText = document.getElementById('qrText').value;
         doc.setFillColor(176, 211, 77);
-        doc.rect(50, 415, 252, 40, 'F');
+        doc.rect(98, 415, 202, 40, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(40);
         doc.setFont('helvetica', 'bold');
