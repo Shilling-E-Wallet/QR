@@ -16,9 +16,8 @@
       background: rgba(255, 255, 255, 0.9);
       justify-content: center;
       align-items: center;
-      z-index: 9999; /* زيادة قيمة z-index */
+      z-index: 9999;
     }
-    
     .loading-content {
       text-align: center;
       background: #f8f9fa;
@@ -26,7 +25,6 @@
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    
     .spinner {
       border: 4px solid #f3f3f3;
       border-top: 4px solid #007bff;
@@ -36,12 +34,10 @@
       animation: spin 1s linear infinite;
       margin: 0 auto 15px;
     }
-    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
     /* الأنماط الأصلية */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -157,6 +153,7 @@
       </div>
       <button onclick="generateQR()">إنشاء QR Code</button>
       <button onclick="generatePDF()" id="pdfButton" disabled>تنزيل كـ PDF</button>
+      <button onclick="generateA5PDF()" id="a5Button" disabled>تنزيل كـ A5 PDF</button>
     </div>
     <div class="qr-preview">
       <div class="qr-code" id="qrCode"></div>
@@ -164,7 +161,6 @@
       <div class="hint">* اضغط على الصورة لحفظها كـ PNG</div>
     </div>
   </div>
-
   <!-- إشعار التحميل -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-content">
@@ -172,20 +168,16 @@
       <p>جاري التحميل...</p>
     </div>
   </div>
-
   <!-- المكتبات الخارجية -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/3.0.7/umd.js"></script>
-  
   <script>
     let qrCodeElement = document.getElementById('qrCode');
     let qrLabelTextElement = document.getElementById('qrLabelText');
     let currentQR;
-
     const defaultLogo = new Image();
     defaultLogo.src = 'Logo.png';
-
     const templateImage = new Image();
     templateImage.src = 'POS.png';
 
@@ -195,10 +187,9 @@
         alert('يرجى إدخال المحتوى!');
         return;
       }
-
       document.getElementById('pdfButton').disabled = false;
+      document.getElementById('a5Button').disabled = false;
       qrCodeElement.innerHTML = '';
-
       currentQR = new QRCode(qrCodeElement, {
         text: textInput,
         width: 300,
@@ -207,10 +198,8 @@
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
-
       qrLabelTextElement.textContent = textInput;
       drawDefaultLogo(300);
-
       const img = qrCodeElement.querySelector('img');
       if (img) {
         img.style.cursor = 'pointer';
@@ -226,21 +215,17 @@
     function drawDefaultLogo(size) {
       const canvas = qrCodeElement.querySelector('canvas');
       if (!canvas) return;
-
       const ctx = canvas.getContext('2d');
       const logoSize = size * 0.250;
       const clearSpace = size * 0.3;
       const x = (canvas.width - clearSpace) / 2;
       const y = (canvas.height - clearSpace) / 2;
-
       ctx.save();
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, y, clearSpace, clearSpace);
       ctx.restore();
-
       const logoX = (canvas.width - logoSize) / 2;
       const logoY = (canvas.height - logoSize) / 2;
-
       defaultLogo.onload = function () {
         ctx.drawImage(defaultLogo, logoX, logoY, logoSize, logoSize);
       };
@@ -252,15 +237,10 @@
     async function generatePDF() {
       const loadingOverlay = document.getElementById('loadingOverlay');
       const pdfButton = document.getElementById('pdfButton');
-      
       try {
-        // تفعيل الإشعار وإيقاف الزر
         pdfButton.disabled = true;
         loadingOverlay.style.display = 'flex';
-        
-        // اضافة تأخير افتراضي لضمان ظهور الإشعار (لحظات فقط)
         await new Promise(resolve => setTimeout(resolve, 50));
-
         const pageWidth = 400;
         const pageHeight = 600;
         const { jsPDF } = window.jspdf;
@@ -269,33 +249,25 @@
           unit: 'px',
           format: [pageWidth, pageHeight]
         });
-
-        // التأكد من تحميل القالب
         if (!templateImage.complete) {
           await new Promise((resolve, reject) => {
             templateImage.onload = resolve;
             templateImage.onerror = () => reject(new Error('Failed to load template image'));
           });
         }
-
         doc.addImage(templateImage, 'PNG', 0, 0, pageWidth, pageHeight);
-        
-
         const qrCanvas = qrCodeElement.querySelector('canvas');
         if (!qrCanvas) {
           throw new Error('QR Code not generated yet.');
         }
-
         const qrData = qrCanvas.toDataURL('image/png', 1.0);
         doc.addImage(qrData, 'PNG', 98, 198, 202, 200);
-
         const labelText = document.getElementById('qrText').value;
         doc.setFillColor(176, 211, 77);
         doc.rect(98, 415, 202, 40, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(40);
         doc.setFont('helvetica', 'bold');
-
         const charSpacing = 10;
         doc.setCharSpace(charSpacing);
         const baseTextWidth = doc.getTextWidth(labelText);
@@ -304,17 +276,88 @@
         const textX = 50 + (300 - totalTextWidth) / 2;
         doc.text(labelText, textX, 445);
         doc.setCharSpace(0);
-
         doc.save('qr-code.pdf');
       } catch (error) {
         console.error('حدث خطأ:', error);
         alert('حدث خطأ أثناء إنشاء PDF');
       } finally {
-        // إيقاف الإشعار وإعادة تفعيل الزر
         setTimeout(() => {
           loadingOverlay.style.display = 'none';
           pdfButton.disabled = false;
-        }, 200); // تأخير بسيط لضمان ظهور الإشعار
+        }, 200);
+      }
+    }
+
+    async function generateA5PDF() {
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const a5Button = document.getElementById('a5Button');
+      try {
+        a5Button.disabled = true;
+        loadingOverlay.style.display = 'flex';
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // إنشاء مستند PDF بحجم A5
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a5'
+        });
+
+        const pageWidth = doc.internal.pageSize.getWidth();  // عرض الصفحة
+        const pageHeight = doc.internal.pageSize.getHeight(); // ارتفاع الصفحة
+
+        // إضافة خلفية بيضاء لتغطية كامل الورقة
+        doc.setFillColor(255, 255, 255); // لون الخلفية أبيض
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // إضافة QR Code
+        const qrCanvas = qrCodeElement.querySelector('canvas');
+        if (!qrCanvas) throw new Error('QR Code not found');
+
+        const qrSize = pageWidth * 0.9; // حجم QR Code يغطي 90% من عرض الصفحة
+        const qrX = (pageWidth - qrSize) / 2; // توسيط أفقي
+        const qrY = pageHeight * 0.03; // المسافة من الأعلى 10%
+        const qrData = qrCanvas.toDataURL('image/png', 1.0);
+        doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize);
+
+        // إضافة النص والمربع الأخضر
+        const labelText = document.getElementById('qrText').value;
+        const textY = qrY + qrSize + 8; // المسافة بين QR Code والمربع الأخضر
+
+        // إنشاء المربع الأخضر
+        doc.setFillColor(176, 211, 77); // لون المربع الأخضر (#B0D34D)
+        doc.rect(qrX, textY, qrSize, 30, 'F'); // مربع النص (نفس عرض QR Code)
+
+        // إضافة النص داخل المربع الأخضر
+        doc.setTextColor(0, 0, 0); // لون النص أسود
+        doc.setFontSize(65); // حجم الخط
+        doc.setFont('helvetica', 'bold'); // نوع الخط
+
+        // تطبيق التباعد بين الحروف
+        const charSpacing = 4; // التباعد بين الحروف
+        doc.setCharSpace(charSpacing);
+
+        // حساب موقع النص ليكون في الوسط أفقيًا
+        const baseTextWidth = doc.getTextWidth(labelText);
+        const extraWidth = (labelText.length - 1) * charSpacing;
+        const totalTextWidth = baseTextWidth + extraWidth;
+        const textX = qrX + (qrSize - totalTextWidth) / 2;
+
+        // كتابة النص داخل المربع الأخضر
+        doc.text(textX, textY + 22, labelText); // المحاذاة الرأسية داخل المربع
+        doc.setCharSpace(5); // إعادة التباعد إلى الوضع الافتراضي
+
+        // حفظ الملف
+        doc.save('qr-code-a5.pdf');
+      } catch (error) {
+        console.error('حدث خطأ:', error);
+        alert('حدث خطأ أثناء إنشاء A5 PDF');
+      } finally {
+        setTimeout(() => {
+          loadingOverlay.style.display = 'none';
+          a5Button.disabled = false;
+        }, 200);
       }
     }
   </script>
