@@ -1052,7 +1052,10 @@
     if(e.keyCode == 123) return false;
     // Ctrl+Shift+I
     if(e.ctrlKey && e.shiftKey && e.keyCode == 73) return false;
-    // Ctrl+U
+    // Ctrl+U    // رسم الشعار في منتصف QR مع خلفية بيضاء
+    // await drawLogoOnCanvas(qrCanvas);
+    
+    const labelText = document.getElementById('qrText').value;
     if(e.ctrlKey && e.keyCode == 85) return false;
     // Ctrl+Shift+C
     if(e.ctrlKey && e.shiftKey && e.keyCode == 67) return false;
