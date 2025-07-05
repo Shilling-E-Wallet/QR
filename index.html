@@ -389,7 +389,7 @@
     let qrLabelTextElement = document.getElementById('qrLabelText');
     let currentQR;
     const defaultLogo = new Image();
-    defaultLogo.src = 'Logo.png'; // تحديث اسم الشعار
+    defaultLogo.src = '/Logo.png'; // تحديث اسم الشعار
     const templateImage = new Image();
     templateImage.src = 'POS.png';
     const customTemplateImage = new Image();
@@ -462,29 +462,30 @@
     }
 
     function drawLogoOnCanvas(canvas) {
-      return new Promise(resolve => {
-        const ctx = canvas.getContext('2d');
-        const size = canvas.width;
-        const logoSize = size * 0.25;
-        const clearSpace = size * 0.3;
-        const x = (size - clearSpace) / 2;
-        const y = (size - clearSpace) / 2;
-        ctx.save();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x, y, clearSpace, clearSpace);
-        ctx.restore();
-        const logoX = (size - logoSize) / 2;
-        const logoY = (size - logoSize) / 2;
-        if (defaultLogo.complete && defaultLogo.naturalWidth > 0) {
-          ctx.drawImage(defaultLogo, logoX, logoY, logoSize, logoSize);
-          resolve();
-        } else {
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      const logoSize = size * 0.25;
+      const clearSpace = size * 0.3;
+      const x = (size - clearSpace) / 2;
+      const y = (size - clearSpace) / 2;
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x, y, clearSpace, clearSpace);
+      ctx.restore();
+      const logoX = (size - logoSize) / 2;
+      const logoY = (size - logoSize) / 2;
+      if (defaultLogo.complete && defaultLogo.naturalWidth > 0) {
+        ctx.drawImage(defaultLogo, logoX, logoY, logoSize, logoSize);
+      } else {
+        // إذا لم يكن الشعار جاهزًا، انتظر ثم أعد المحاولة
+        return new Promise(resolve => {
           defaultLogo.onload = () => {
             ctx.drawImage(defaultLogo, logoX, logoY, logoSize, logoSize);
             resolve();
           };
-        }
-      });
+        });
+      }
+      return Promise.resolve();
     }
 
     async function generatePDF() {
@@ -611,13 +612,15 @@
     async function generateCustomPDF() {
       const loadingOverlay = document.getElementById('loadingOverlay');
       const customPdfButton = document.getElementById('customPdfButton');
+
+      // إعدادات موحدة للتحكم في الحجم والموضع
       const cardSettings = {
-        qrSizeRatio: 0.58,
-        qrYRatio: 0.33,
-        rectHeight: 7,
-        rectMargin: 2,
-        fontSize: 20,
-        rectWidthRatio: 1.02
+        qrSizeRatio: 0.58,      // نسبة حجم الـ QR من عرض البطاقة (مثلاً 0.28 = 28%)
+        qrYRatio: 0.33,         // نسبة موضع QR من الأعلى
+        rectHeight: 7,          // ارتفاع المستطيل أسفل QR
+        rectMargin: 2,          // المسافة بين QR والمستطيل
+        fontSize: 20,           // حجم الخط
+        rectWidthRatio: 1.02    // نسبة عرض المستطيل إلى qrSize
       };
 
       try {
@@ -634,8 +637,8 @@
 
         if (!customTemplateImage.complete) {
           await new Promise((resolve, reject) => {
-            customTemplateImage.onload = resolve;
-            customTemplateImage.onerror = () => reject(new Error('فشل في تحميل القالب الجديد'));
+        customTemplateImage.onload = resolve;
+        customTemplateImage.onerror = () => reject(new Error('فشل في تحميل القالب الجديد'));
           });
         }
 
@@ -645,15 +648,16 @@
 
         const qrCanvas = qrCodeElement.querySelector('canvas');
         if (!qrCanvas) throw new Error('QR Code غير موجود');
-        // رسم الشعار في منتصف QR مع خلفية بيضاء (قبل تحويله لصورة)
-        await drawLogoOnCanvas(qrCanvas);
-
-        const shiftX = 0.7;
+        // استخدام الإعدادات الموحدة مع تحريك الكل إلى اليمين قليلاً
+        const shiftX = 0.7; // مقدار التحريك لليمين (يمكنك تعديله حسب الحاجة)
         const qrSize = pageWidth * cardSettings.qrSizeRatio;
         const qrX = (pageWidth - qrSize) / 2 + shiftX;
         const qrY = pageHeight * cardSettings.qrYRatio;
 
         doc.addImage(qrCanvas.toDataURL('image/png', 1.0), 'PNG', qrX, qrY, qrSize, qrSize);
+
+        // رسم الشعار في منتصف QR مع خلفية بيضاء
+        await drawLogoOnCanvas(qrCanvas);
 
         const labelText = document.getElementById('qrText').value;
         const rectWidth = qrSize * cardSettings.rectWidthRatio;
@@ -667,9 +671,11 @@
         doc.setFont('helvetica', 'bold');
         doc.setCharSpace(0.8);
 
+        // حساب عرض النص مع التباعد
         const baseTextWidth = doc.getTextWidth(labelText);
-        const extraWidth = (labelText.length - 1) * 1;
+        const extraWidth = (labelText.length - 1) * 1; // 1 هو مقدار التباعد
         const totalTextWidth = baseTextWidth + extraWidth;
+        // توسيط النص داخل المستطيل الأخضر بالضبط
         const textX = rectX + (rectWidth - totalTextWidth) / 2;
 
         doc.text(labelText, textX, rectY + cardSettings.rectHeight - 1);
@@ -1046,10 +1052,7 @@
     if(e.keyCode == 123) return false;
     // Ctrl+Shift+I
     if(e.ctrlKey && e.shiftKey && e.keyCode == 73) return false;
-    // Ctrl+U    // رسم الشعار في منتصف QR مع خلفية بيضاء
-    // await drawLogoOnCanvas(qrCanvas);
-    
-    const labelText = document.getElementById('qrText').value;
+    // Ctrl+U
     if(e.ctrlKey && e.keyCode == 85) return false;
     // Ctrl+Shift+C
     if(e.ctrlKey && e.shiftKey && e.keyCode == 67) return false;
@@ -1058,4 +1061,4 @@
   };
 </script>
 </body>
-  </html>
+</html>
