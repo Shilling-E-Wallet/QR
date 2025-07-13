@@ -550,6 +550,20 @@
       }
     }
 
+    // إعدادات موحدة للتحكم في الحجم والموضع
+    const a5Settings = {
+      pageWidth: 105, // مم
+      pageHeight: 120, // مم
+      qrSizeRatio: 0.85, // نسبة حجم QR من عرض الصفحة
+      qrYRatio: 0.04, // نسبة موضع QR من الأعلى
+      rectHeight: 17, // ارتفاع المستطيل
+      rectMargin: 4, // المسافة بين QR والمستطيل
+      fontSize: 48, // حجم الخط
+      rectWidthRatio: 1, // نسبة عرض المستطيل إلى qrSize
+      charSpacing: 3.5, // تباعد الأحرف
+      textYOffset: 14 // نزول النص داخل المستطيل
+    };
+
     async function generateA5PDF() {
       const loadingOverlay = document.getElementById('loadingOverlay');
       const a5Button = document.getElementById('a5Button');
@@ -561,46 +575,39 @@
         const doc = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
-          format: 'a5'
+          format: [a5Settings.pageWidth, a5Settings.pageHeight]
         });
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = a5Settings.pageWidth;
+        const pageHeight = a5Settings.pageHeight;
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
         const qrCanvas = qrCodeElement.querySelector('canvas');
         if (!qrCanvas) throw new Error('QR Code غير موجود');
-        // إعدادات الحجم
-        const qrSize = pageWidth * 0.9; // 90% من عرض الصفحة
-        const labelHeight = 30;
-        const labelMargin = 8;
-        // حساب المساحة الكلية (QR + المستطيل + الهامش)
-        const totalHeight = qrSize + labelMargin + labelHeight;
-        // توسيط الشكل عموديًا مع تحريكه للأسفل قليلاً
-        const extraDown = 15; // مقدار النزول الإضافي للأسفل
-        const startY = ((pageHeight - totalHeight) / 10) + extraDown;
+        const qrSize = pageWidth * a5Settings.qrSizeRatio;
         const qrX = (pageWidth - qrSize) / 2;
-        const qrY = startY;
+        const qrY = pageHeight * a5Settings.qrYRatio;
         const qrData = qrCanvas.toDataURL('image/png', 1.0);
         doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize);
         const labelText = document.getElementById('qrText').value;
-        const textY = qrY + qrSize + labelMargin;
+        const textY = qrY + qrSize + a5Settings.rectMargin;
+        const rectWidth = qrSize * a5Settings.rectWidthRatio;
+        const rectX = (pageWidth - rectWidth) / 2;
         doc.setFillColor(188,214,49);
-        doc.rect(qrX, textY, qrSize, labelHeight, 'F');
+        doc.rect(rectX, textY, rectWidth, a5Settings.rectHeight, 'F');
         doc.setTextColor(0, 0, 0);
-        doc.setFontSize(65);
+        doc.setFontSize(a5Settings.fontSize);
         doc.setFont('helvetica', 'bold');
-        const charSpacing = 4;
-        doc.setCharSpace(charSpacing);
+        doc.setCharSpace(a5Settings.charSpacing);
         const baseTextWidth = doc.getTextWidth(labelText);
-        const extraWidth = (labelText.length - 1) * charSpacing;
+        const extraWidth = (labelText.length - 1) * a5Settings.charSpacing;
         const totalTextWidth = baseTextWidth + extraWidth;
-        const textX = qrX + (qrSize - totalTextWidth) / 2;
-        doc.text(labelText, textX, textY + 22);
+        const textX = rectX + (rectWidth - totalTextWidth) / 2;
+        doc.text(labelText, textX, textY + a5Settings.textYOffset);
         doc.setCharSpace(0);
-        doc.save(`qr-code-QTBShilling-a5-${new Date().toISOString().slice(0,10)}.pdf`);
+        doc.save(`qr-code-QTBShilling-custom-${new Date().toISOString().slice(0,10)}.pdf`);
       } catch (error) {
         console.error('حدث خطأ:', error);
-        alert('حدث خطأ أثناء إنشاء A5 PDF');
+        alert('حدث خطأ أثناء إنشاء PDF');
       } finally {
         setTimeout(() => {
           loadingOverlay.style.display = 'none';
@@ -648,7 +655,6 @@
 
         const qrCanvas = qrCodeElement.querySelector('canvas');
         if (!qrCanvas) throw new Error('QR Code غير موجود');
-        // استخدام الإعدادات الموحدة مع تحريك الكل إلى اليمين قليلاً
         const shiftX = 0.7; // مقدار التحريك لليمين (يمكنك تعديله حسب الحاجة)
         const qrSize = pageWidth * cardSettings.qrSizeRatio;
         const qrX = (pageWidth - qrSize) / 2 + shiftX;
@@ -799,10 +805,10 @@
         const doc = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
-          format: 'a5'
+          format: [a5Settings.pageWidth, a5Settings.pageHeight]
         });
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = a5Settings.pageWidth;
+        const pageHeight = a5Settings.pageHeight;
         for (let i = 0; i < codes.length; i++) {
           if (i > 0) doc.addPage();
           doc.setFillColor(255, 255, 255);
@@ -819,25 +825,26 @@
           });
           const qrCanvas = tempDiv.querySelector('canvas');
           await drawLogoOnCanvas(qrCanvas);
-          const qrSize = pageWidth * 0.9;
+          const qrSize = pageWidth * a5Settings.qrSizeRatio;
           const qrX = (pageWidth - qrSize) / 2;
-          const qrY = pageHeight * 0.09;
+          const qrY = pageHeight * a5Settings.qrYRatio;
           const qrData = qrCanvas.toDataURL('image/png', 1.0);
           doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize);
           const labelText = codes[i];
-          const textY = qrY + qrSize + 8;
+          const textY = qrY + qrSize + a5Settings.rectMargin;
+          const rectWidth = qrSize * a5Settings.rectWidthRatio;
+          const rectX = (pageWidth - rectWidth) / 2;
           doc.setFillColor(188,214,49);
-          doc.rect(qrX, textY, qrSize, 30, 'F');
+          doc.rect(rectX, textY, rectWidth, a5Settings.rectHeight, 'F');
           doc.setTextColor(0, 0, 0);
-          doc.setFontSize(65);
+          doc.setFontSize(a5Settings.fontSize);
           doc.setFont('helvetica', 'bold');
-          const charSpacing = 4;
-          doc.setCharSpace(charSpacing);
+          doc.setCharSpace(a5Settings.charSpacing);
           const baseTextWidth = doc.getTextWidth(labelText);
-          const extraWidth = (labelText.length - 1) * charSpacing;
+          const extraWidth = (labelText.length - 1) * a5Settings.charSpacing;
           const totalTextWidth = baseTextWidth + extraWidth;
-          const textX = qrX + (qrSize - totalTextWidth) / 2;
-          doc.text(labelText, textX, textY + 22);
+          const textX = rectX + (rectWidth - totalTextWidth) / 2;
+          doc.text(labelText, textX, textY + a5Settings.textYOffset);
           doc.setCharSpace(0);
         }
         doc.save('bulk-qr-codes-a5.pdf');
