@@ -522,7 +522,7 @@
         doc.addImage(qrData, 'PNG', 98, 198, 202, 200);
         
         const labelText = document.getElementById('qrText').value;
-        doc.setFillColor(188,214,49);
+        doc.setFillColor(176,210,59);
         doc.rect(98, 415, 202, 40, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(40);
@@ -593,7 +593,7 @@
         const textY = qrY + qrSize + a5Settings.rectMargin;
         const rectWidth = qrSize * a5Settings.rectWidthRatio;
         const rectX = (pageWidth - rectWidth) / 2;
-        doc.setFillColor(188,214,49);
+        doc.setFillColor(176,210,59);
         doc.rect(rectX, textY, rectWidth, a5Settings.rectHeight, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(a5Settings.fontSize);
@@ -670,8 +670,8 @@
         const rectWidth = qrSize * cardSettings.rectWidthRatio;
         const rectX = (pageWidth - rectWidth) / 2 + shiftX;
         const rectY = qrY + qrSize + cardSettings.rectMargin;
-
-        doc.setFillColor(188,214,49);
+        
+        doc.setFillColor(176, 211, 77); // Changed to match CSS color #B0D34D
         doc.rect(rectX, rectY, rectWidth, cardSettings.rectHeight, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(cardSettings.fontSize);
@@ -757,7 +757,7 @@
 
           doc.addImage(qrData, 'PNG', 98, 198, 202, 200);
 
-          doc.setFillColor(188,214,49);
+          doc.setFillColor(176, 211, 77); // Changed to match CSS color #B0D34D
           doc.rect(98, 415, 202, 40, 'F');
           doc.setTextColor(0, 0, 0);
           doc.setFontSize(40);
@@ -835,7 +835,7 @@
           const textY = qrY + qrSize + a5Settings.rectMargin;
           const rectWidth = qrSize * a5Settings.rectWidthRatio;
           const rectX = (pageWidth - rectWidth) / 2;
-          doc.setFillColor(188,214,49);
+          doc.setFillColor(176,210,59);
           doc.rect(rectX, textY, rectWidth, a5Settings.rectHeight, 'F');
           doc.setTextColor(0, 0, 0);
           doc.setFontSize(a5Settings.fontSize);
@@ -922,7 +922,7 @@
           const rectWidth = qrSize * cardSettings.rectWidthRatio;
           const rectX = (pageWidth - rectWidth) / 2 + shiftX;
           const rectY = qrY + qrSize + cardSettings.rectMargin;
-          doc.setFillColor(188,214,49);
+          doc.setFillColor(176, 211, 77); // Changed to match CSS color #B0D34D
           doc.rect(rectX, rectY, rectWidth, cardSettings.rectHeight, 'F');
           doc.setTextColor(0, 0, 0);
           doc.setFontSize(cardSettings.fontSize);
